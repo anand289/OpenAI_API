@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="h-100 p-5 text-bg-light rounded-3">
+    <div class="container-fluid py-5">
+      <h1 class="display-5 fw-bold">Transcriber</h1>
+      <p class="col-md-8 fs-4">Upload the .mp4 file and transcriber can convert that audio into text.</p>
+      <a href="{{url_for('transcriber')}}">
+        <button class="btn btn-primary btn-lg" type="button">Try Transcriber</button>
+      </a>
+    </div>
+</div>
+
+<div class="h-100 p-5 text-bg-dark rounded-3">
+    <div class="container-fluid py-5">
+      <h1 class="display-5 fw-bold">Pundit</h1>
+      <p class="col-md-8 fs-4">Coming up!</p>
+      <a href="#">
+        <button class="btn btn-primary btn-lg" type="button">Try Pundit</button>
+      </a>
+    </div>
+</div>
+
+
+
+{% endblock %}
