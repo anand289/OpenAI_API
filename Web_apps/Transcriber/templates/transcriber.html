@@ -1,10 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
+    <section class="py-5 text-center container">
+      <div class="row py-lg-5">
+        <div class="col-lg-6 col-md-8 mx-auto">
+          <h1 class="fw-light">Transcriber</h1>
+          <p class="lead text-body-secondary">Welcome to the transcriber app! Convert speech to text by uploading an audio file here</p>
+        </div>
+      </div>
+    </section>
+
     <div class="p-5 mb-4 bg-body-tertiary rounded-3">
         <div class="container-fluid py-5">
-          <h1 class="display-5 fw-bold">Welcome to the Transcriber app</h1>
+          <h1 class="display-5 fw-bold">Upload your audio</h1>
           <form action="/transcriber" method="post" enctype="multipart/form-data">
-            <div id="emailHelp" class="form-text">Upload your audio file here.</div>
+            <div id="emailHelp" class="form-text">Upload your audio file here ('flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm')</div>
             <div class="input-group mb-3">
                 <input type="file" name="file" accept="mp4,mp3" class="form-control" id="inputGroupFile03" aria-describedby="inputGroupFileAddon03" aria-label="Upload">
             </div>
@@ -12,12 +21,6 @@
           </form>
         {% if message %}
             <p>{{ message }}</p>
-            {% if filename %}
-                <video width="320" height="240" controls>
-                    <source src="{{ url_for('static', filename=filename) }}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            {% endif %}
         {% endif %}
         </div>
       </div>
