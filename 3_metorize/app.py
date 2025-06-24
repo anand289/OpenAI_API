@@ -12,11 +12,8 @@ from email.message import EmailMessage
 audio_data = None
 sample_rate = 44100
 
-openai_base_url = ""
-openai_api_key = ""
-
-#Initialize a client
-client = openai.OpenAI(api_key=openai_api_key, base_url=openai_base_url)
+os.environ['OPENAI_API_KEY'] = ""
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 app = Flask(__name__)
 
