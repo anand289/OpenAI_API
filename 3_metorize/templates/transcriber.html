@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="py-5 text-center container">
+  <div class="row py-lg-5">
+    <div class="col-lg-6 col-md-8 mx-auto">
+      <h1 class="fw-light">Mentorize</h1>
+      <p class="lead text-body-secondary">Welcome to the Mentorize app! Make your mentorship journey smoother.</p>
+    </div>
+  </div>
+</section>
+
+<div class="p-5 mb-4 bg-body-tertiary rounded-3">
+  <div class="container-fluid py-5">
+    <h1 class="display-6 fw-bold">Upload audio</h1>
+    <form action="/transcriber" method="post" enctype="multipart/form-data">
+      <div id="emailHelp" class="form-text">Upload your audio file here.</div>
+      <div class="input-group mb-3">
+        <input type="file" name="file" accept="mp4,mp3,wav" class="form-control" id="inputGroupFile03"
+          aria-describedby="inputGroupFileAddon03" aria-label="Upload">
+      </div>
+      <button type="submit" class="btn btn-primary">Convert</button>
+    </form>
+    {% if message %}
+    <div class="mt-4" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+      <h2>Session Transcription</h2>
+      <p>{{ message }}</p>
+    </div>
+    {% endif %}
+    {% if insights %}
+    <div class="mt-4">
+      <h2>Insights</h2>
+      <div>{{ insights|safe }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if insights %}
+  <div class="mt-4">
+    <h2>Email Preview</h2>
+    <div class="border p-3 rounded" style="background-color: #f9f9f9;">
+      <p><strong>Subject Line:</strong> Thank you for today's session</p>
+      <p><strong>Message:</strong></p>
+      <p>
+        Hi Sarah,<br><br>
+        Thank you so much for today's session! Your advice about leveraging my analytical background in PM interviews was incredibly helpful. I'm planning to:<br>
+        • Work on the mock product roadmap exercise you suggested<br>
+        • Update my LinkedIn to highlight PM aspirations<br>
+        • Reach out to the contacts you mentioned<br><br>
+        I'll keep you updated on my progress. Would it be helpful if I shared my mock roadmap with you for feedback in a couple of weeks?<br><br>
+        Thanks again for your time and guidance!<br><br>
+        Best,<br>
+        Alex
+      </p>
+    </div>
+  </div>
+  <form action="/send_email" method="post">
+    <input type="hidden" name="subject" value="Your Subject Here">
+    <input type="hidden" name="body" value="Your Body Content Here">
+    <button type="submit" class="btn btn-primary">Send Email</button>
+  </form>
+  {% endif %}
+</div>
+
+{% endblock %}
