@@ -4,6 +4,7 @@ from pydub import AudioSegment
 import numpy as npc
 import wave
 import os
+from openai import OpenAI
 
 from dotenv import load_dotenv
 import smtplib
