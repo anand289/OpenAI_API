@@ -145,4 +145,4 @@ def convert_audio_to_wav(input_audio_file, output_wav_file):
     audio.export(output_wav_file, format="wav", bitrate="64k") 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5003)
+    app.run(debug=True, port=5006)
