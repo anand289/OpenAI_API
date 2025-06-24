@@ -4,6 +4,8 @@ from openai import OpenAI
 
 import os
 
+os.environ['OPENAI_API_KEY'] = ""
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 app = Flask(__name__)
 
