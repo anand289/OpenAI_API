@@ -1,33 +1,115 @@
 {% extends "base.html" %}
 {% block content %}
-    <section class="py-5 text-center container">
-      <div class="row py-lg-5">
-        <div class="col-lg-6 col-md-8 mx-auto">
-          <h1 class="fw-light">Transcriber</h1>
-          <p class="lead text-body-secondary">Welcome to the transcriber app! Convert speech to text by uploading an audio file here</p>
-        </div>
-      </div>
-    </section>
+<section class="py-5 text-center container">
+  <div class="row py-lg-5">
+    <div class="col-lg-6 col-md-8 mx-auto">
+      <h1 class="fw-light">Transcriber</h1>
+      <p class="lead text-body-secondary">Convert your speech to text</p>
+    </div>
+  </div>
+</section>
 
-    <div class="p-5 mb-4 bg-body-tertiary rounded-3">
-        <div class="container-fluid py-5">
-          <h1 class="display-5 fw-bold">Upload your audio</h1>
-          <form action="/transcriber" method="post" enctype="multipart/form-data">
-            <div id="emailHelp" class="form-text">Upload your audio file here ('flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm')</div>
-            <div class="input-group mb-3">
-                <input type="file" name="file" accept="mp4,mp3" class="form-control" id="inputGroupFile03" aria-describedby="inputGroupFileAddon03" aria-label="Upload">
-            </div>
-            <button type="submit" class="btn btn-primary">Convert</button>
-          </form>
-        {% if message %}
-            <p>{{ message }}</p>
-        {% endif %}
-        {% if summary %}
-          <hr>
-          <h2>Summary</h2>
-          <p>{{ summary }}</p>
-        {% endif %}
-        </div>
+<!-- Tabs Navigation -->
+<ul class="nav nav-tabs" id="transcriberTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload" type="button" role="tab">Upload Audio</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="record-tab" data-bs-toggle="tab" data-bs-target="#record" type="button" role="tab">Record Audio</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="youtube-tab" data-bs-toggle="tab" data-bs-target="#youtube" type="button" role="tab">YouTube Link</button>
+  </li>
+</ul>
+
+<!-- Tabs Content -->
+<div class="tab-content p-4 border border-top-0" id="tabContent">
+  <!-- Upload Tab -->
+  <div class="tab-pane fade show active" id="upload" role="tabpanel">
+    <form action="/transcriber" method="post" enctype="multipart/form-data">
+      <div class="form-text mb-2">Supported formats: flac, m4a, mp3, mp4, wav, etc.</div>
+      <div class="input-group mb-3">
+        <input type="file" name="file" accept="audio/*,video/mp4" class="form-control">
       </div>
+      <button type="submit" class="btn btn-primary">Convert</button>
+    </form>
+  </div>
+
+  <!-- Record Tab -->
+  <div class="tab-pane fade" id="record" role="tabpanel">
+    <p class="mb-3">Click the button to record audio and transcribe it.</p>
+    <button id="startBtn" class="btn btn-success">Start Recording</button>
+    <button id="stopBtn" class="btn btn-danger" disabled>Stop Recording</button>
+    <p id="status" class="mt-3"></p>
+    <form id="recordForm" action="/transcriber" method="post" enctype="multipart/form-data" style="display:none;">
+      <input type="file" id="audioBlob" name="file">
+    </form>
+  </div>
+
+  <!-- YouTube Tab -->
+  <div class="tab-pane fade" id="youtube" role="tabpanel">
+    <p class="mb-3">Paste a YouTube video link to transcribe its audio.</p>
+    <form action="/transcriber" method="post">
+      <div class="mb-3">
+        <label for="youtube_url" class="form-label">YouTube URL</label>
+        <input type="url" name="youtube_url" id="youtube_url" class="form-control" placeholder="https://youtube.com/..." required>
+      </div>
+      <button type="submit" class="btn btn-primary">Transcribe</button>
+    </form>
+  </div>
+
+</div>
+
+{% if message %}
+  <hr><h4>Transcription:</h4><p>{{ message }}</p>
+{% endif %}
+{% if summary %}
+  <hr><h4>Summary:</h4><p>{{ summary }}</p>
+{% endif %}
+
+<!-- JS for Recording -->
+<script>
+  let mediaRecorder;
+  let audioChunks = [];
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const status = document.getElementById('status');
+
+  startBtn.onclick = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = event => {
+      if (event.data.size > 0) {
+        audioChunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      const file = new File([blob], 'recording.webm', { type: 'audio/webm' });
+
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      const input = document.getElementById('audioBlob');
+      input.files = dataTransfer.files;
+
+      document.getElementById('recordForm').submit();
+    };
+
+    mediaRecorder.start();
+    status.innerText = "Recording...";
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+  };
+
+  stopBtn.onclick = () => {
+    mediaRecorder.stop();
+    status.innerText = "Recording stopped. Submitting...";
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+  };
+</script>
 
 {% endblock %}
