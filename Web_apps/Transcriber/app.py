@@ -6,6 +6,7 @@ from yt_dlp import YoutubeDL
 import uuid
 import glob
 import os
+import markdown
 
 os.environ['OPENAI_API_KEY'] = ""
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
@@ -54,7 +55,7 @@ def transcriber():
                     'preferredcodec': 'mp3',
                     'preferredquality': '192',
                 }],
-                'postprocessor_args': ['-t', '600'], 
+                'postprocessor_args': ['-t', '30'], 
                 'noplaylist': True,
                 'quiet': True
             }
@@ -77,14 +78,26 @@ def transcriber():
             summary_response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant that summarizes audio transcripts."},
-                    {"role": "user", "content": f"Please summarize the following transcription:\n\n{transcript_text}"}
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a professional summarizer. "
+                            "Given a transcript, break it down into structured sections using clear, relevant headings. "
+                            "Each section should summarize the topic under that heading concisely and clearly. "
+                            "Use markdown-style formatting for headings (e.g., '## Introduction')."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Summarize the following transcription:\n\n{transcript_text}"
+                    }
                 ],
                 temperature=0.5
             )
             summary_text = summary_response.choices[0].message.content
+            summary_html = markdown.markdown(summary_text)
 
-            return render_template('transcriber.html', message=transcript_text, summary=summary_text)
+            return render_template('transcriber.html', message=transcript_text, summary=summary_html)       
 
         except Exception as e:
             return render_template('transcriber.html', message=f"Error processing YouTube video: {str(e)}")
@@ -109,14 +122,26 @@ def transcriber():
         summary_response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant that summarizes audio transcripts."},
-                {"role": "user", "content": f"Please summarize the following transcription:\n\n{transcript_text}"}
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a professional summarizer. "
+                            "Given a transcript, break it down into structured sections using clear, relevant headings. "
+                            "Each section should summarize the topic under that heading concisely and clearly. "
+                            "Use markdown-style formatting for headings (e.g., '## Introduction')."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Summarize the following transcription:\n\n{transcript_text}"
+                    }
             ],
             temperature=0.5
         )
         summary_text = summary_response.choices[0].message.content
+        summary_html = markdown.markdown(summary_text)
 
-        return render_template('transcriber.html', message=transcript_text, summary=summary_text, filename=file.filename)
+        return render_template('transcriber.html', message=transcript_text, summary=summary_html)
 
 if __name__ == '__main__':
-    app.run(debug=True,port=5010)
+    app.run(debug=True,port=5025)

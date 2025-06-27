@@ -64,7 +64,9 @@
   <hr><h4>Transcription:</h4><p>{{ message }}</p>
 {% endif %}
 {% if summary %}
-  <hr><h4>Summary:</h4><p>{{ summary }}</p>
+  <hr>
+  <h4>Summary:</h4>
+  <div>{{ summary | safe }}</div>
 {% endif %}
 
 <!-- JS for Recording -->
