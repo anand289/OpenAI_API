@@ -7,6 +7,7 @@ import uuid
 import glob
 import os
 import markdown
+import re
 
 os.environ['OPENAI_API_KEY'] = ""
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
@@ -55,7 +56,7 @@ def transcriber():
                     'preferredcodec': 'mp3',
                     'preferredquality': '192',
                 }],
-                'postprocessor_args': ['-t', '30'], 
+                'postprocessor_args': ['-t', '200'], 
                 'noplaylist': True,
                 'quiet': True
             }
@@ -97,7 +98,11 @@ def transcriber():
             summary_text = summary_response.choices[0].message.content
             summary_html = markdown.markdown(summary_text)
 
-            return render_template('transcriber.html', message=transcript_text, summary=summary_html)       
+            # Replace heading levels (e.g., h2 -> h6, h3 -> h6)
+            summary_html = re.sub(r'<h[1-6]>', '<h6>', summary_html)
+            summary_html = re.sub(r'</h[1-6]>', '</h6>', summary_html)
+
+            return render_template('transcriber.html', message=transcript_text, summary=summary_html,active_tab='youtube')       
 
         except Exception as e:
             return render_template('transcriber.html', message=f"Error processing YouTube video: {str(e)}")
@@ -108,7 +113,7 @@ def transcriber():
 
     file = request.files['file']
     if file.filename == '':
-        return render_template('transcriber.html', message='No selected file')
+        return render_template('transcriber.html', message='No selected file', active_tab='upload')
 
     if file:
         os.makedirs('uploads', exist_ok=True)
@@ -141,7 +146,12 @@ def transcriber():
         summary_text = summary_response.choices[0].message.content
         summary_html = markdown.markdown(summary_text)
 
-        return render_template('transcriber.html', message=transcript_text, summary=summary_html)
+        # Replace heading levels (e.g., h2 -> h6, h3 -> h6)
+        summary_html = re.sub(r'<h[1-6]>', '<h6>', summary_html)
+        summary_html = re.sub(r'</h[1-6]>', '</h6>', summary_html)
+
+        return render_template('transcriber.html', message=transcript_text, summary=summary_html, filename=file.filename,
+                                active_tab='record' if file.filename.endswith('.webm') else 'upload')
 
 if __name__ == '__main__':
-    app.run(debug=True,port=5025)
+    app.run(debug=True,port=5031)
