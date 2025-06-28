@@ -56,7 +56,7 @@ def transcriber():
                     'preferredcodec': 'mp3',
                     'preferredquality': '192',
                 }],
-                'postprocessor_args': ['-t', '200'], 
+                'postprocessor_args': ['-t', '20'], 
                 'noplaylist': True,
                 'quiet': True
             }
@@ -154,4 +154,4 @@ def transcriber():
                                 active_tab='record' if file.filename.endswith('.webm') else 'upload')
 
 if __name__ == '__main__':
-    app.run(debug=True,port=5031)
+    app.run(debug=True,port=5033)
