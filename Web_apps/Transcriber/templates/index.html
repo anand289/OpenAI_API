@@ -5,7 +5,7 @@
     <div class="container-fluid py-5">
       <h1 class="display-5 fw-bold">Transcriber</h1>
       <p class="col-md-8 fs-4">Web app to transcribe audio from uploaded files, recordings, or YouTube links using OpenAI’s API. It also summarizes the transcription into structured sections using GPT.</p>
-      <a href="{{ url_for('login') }}">
+      <a href="{% if session.authenticated %}{{ url_for('transcriber') }}{% else %}{{ url_for('login') }}{% endif %}">
         <button class="btn btn-primary btn-lg" type="button">Try Transcriber</button>
       </a>
     </div>

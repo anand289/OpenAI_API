@@ -9,12 +9,17 @@ import os
 import markdown
 import re
 
+# Setup OpenAI API
 os.environ['OPENAI_API_KEY'] = ""
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-
 app = Flask(__name__)
-app.secret_key = 'tarun' # Replace with a secure password
+app.secret_key = 'tarun'  # Replace with a secure secret key
+
+# Inject session into all templates (for navbar login/logout visibility)
+@app.context_processor
+def inject_session():
+    return dict(session=session)
 
 @app.route('/')
 def index():
@@ -29,8 +34,12 @@ def login():
             return redirect(url_for('transcriber'))
         else:
             return render_template('login.html', error='Invalid password')
-
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 @app.route('/transcriber', methods=['POST', 'GET'])
 def transcriber():
@@ -56,7 +65,7 @@ def transcriber():
                     'preferredcodec': 'mp3',
                     'preferredquality': '192',
                 }],
-                'postprocessor_args': ['-t', '20'], 
+                'postprocessor_args': ['-t', '20'],
                 'noplaylist': True,
                 'quiet': True
             }
@@ -98,18 +107,18 @@ def transcriber():
             summary_text = summary_response.choices[0].message.content
             summary_html = markdown.markdown(summary_text)
 
-            # Replace heading levels (e.g., h2 -> h6, h3 -> h6)
+            # Replace heading levels with h6
             summary_html = re.sub(r'<h[1-6]>', '<h6>', summary_html)
             summary_html = re.sub(r'</h[1-6]>', '</h6>', summary_html)
 
-            return render_template('transcriber.html', message=transcript_text, summary=summary_html,active_tab='youtube')       
+            return render_template('transcriber.html', message=transcript_text, summary=summary_html, active_tab='youtube')
 
         except Exception as e:
-            return render_template('transcriber.html', message=f"Error processing YouTube video: {str(e)}")
+            return render_template('transcriber.html', message=f"Error processing YouTube video: {str(e)}", active_tab='youtube')
 
     # --- Case 2: File Upload (local or recorded) ---
     if 'file' not in request.files:
-        return render_template('transcriber.html', message='No file found')
+        return render_template('transcriber.html', message='No file found', active_tab='upload')
 
     file = request.files['file']
     if file.filename == '':
@@ -127,31 +136,31 @@ def transcriber():
         summary_response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are a professional summarizer. "
-                            "Given a transcript, break it down into structured sections using clear, relevant headings. "
-                            "Each section should summarize the topic under that heading concisely and clearly. "
-                            "Use markdown-style formatting for headings (e.g., '## Introduction')."
-                        )
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Summarize the following transcription:\n\n{transcript_text}"
-                    }
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a professional summarizer. "
+                        "Given a transcript, break it down into structured sections using clear, relevant headings. "
+                        "Each section should summarize the topic under that heading concisely and clearly. "
+                        "Use markdown-style formatting for headings (e.g., '## Introduction')."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": f"Summarize the following transcription:\n\n{transcript_text}"
+                }
             ],
             temperature=0.5
         )
         summary_text = summary_response.choices[0].message.content
         summary_html = markdown.markdown(summary_text)
 
-        # Replace heading levels (e.g., h2 -> h6, h3 -> h6)
+        # Replace heading levels with h6
         summary_html = re.sub(r'<h[1-6]>', '<h6>', summary_html)
         summary_html = re.sub(r'</h[1-6]>', '</h6>', summary_html)
 
         return render_template('transcriber.html', message=transcript_text, summary=summary_html, filename=file.filename,
-                                active_tab='record' if file.filename.endswith('.webm') else 'upload')
+                               active_tab='record' if file.filename.endswith('.webm') else 'upload')
 
 if __name__ == '__main__':
-    app.run(debug=True,port=5035)
+    app.run(debug=True, port=5041)
