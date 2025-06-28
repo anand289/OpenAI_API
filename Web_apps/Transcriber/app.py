@@ -154,4 +154,4 @@ def transcriber():
                                 active_tab='record' if file.filename.endswith('.webm') else 'upload')
 
 if __name__ == '__main__':
-    app.run(debug=True,port=5033)
+    app.run(debug=True,port=5035)
